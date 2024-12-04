@@ -47,26 +47,51 @@ export const ProductDetails = styled('div', {
     lineHeight: 1.6,
     color: '$gray300',
   },
-
-  button: {
-    marginTop: 'auto',
-    backgroundColor: '$green500',
-    border: 0,
-    color: '$white',
-    borderRadius: 8,
-    padding: '1.25rem',
-    cursor: 'pointer',
-    fontWeight: 'bold',
-    fontSize: '$md',
-    transition: 'background-color 0.2s',
-
-    '&:disabled': {
-      opacity: 0.6,
-      cursor: 'not-allowed',
-    },
-
-    '&:not(:disabled):hover': {
-      backgroundColor: '$green300',
-    }
-  }
 });
+
+export const ButtonsContainer = styled('div', {
+  display: 'flex',
+  gap: '1.25rem',
+  flexDirection: 'column',
+  marginTop: 'auto',
+});
+
+export const Button = styled('button', {
+  marginTop: 'auto',
+  backgroundColor: '$green500',
+  border: 0,
+  color: '$white',
+  borderRadius: 8,
+  padding: '1.25rem',
+  cursor: 'pointer',
+  fontWeight: 'bold',
+  fontSize: '$md',
+  transition: 'background-color 0.2s',
+
+  '&:disabled': {
+    opacity: 0.6,
+    cursor: 'not-allowed',
+  },
+
+
+  variants: {
+    variant: {
+      primary: {
+        backgroundColor: '$green500',
+        color: '$white',
+
+        '&:not(:disabled):hover': {
+          backgroundColor: '$green300',
+        },      
+      },
+      secondary: {
+        backgroundColor: '$gray800',
+        color: '$green500',
+
+        '&:not(:disabled):hover': {
+          filter: 'brightness(1.15)',
+        },
+      },
+    },
+  }
+})

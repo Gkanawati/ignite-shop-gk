@@ -9,6 +9,8 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@phosphor-icons/react": "^2.1.7",
+    "@radix-ui/react-dialog": "^1.1.2",
     "@stitches/react": "^1.2.8",
     "axios": "^1.7.7",
     "keen-slider": "^6.8.6",

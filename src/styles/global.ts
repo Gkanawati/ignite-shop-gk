@@ -21,4 +21,12 @@ export const globalStyles = globalCss({
     fontFamily: 'Roboto, sans-serif',
     fontWeight: 400,
   },
+
+  a: {
+    color: 'inherit',
+  },
+
+  button: {
+    cursor: 'pointer',
+  }
 })

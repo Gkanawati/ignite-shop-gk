@@ -6,20 +6,17 @@ import { useRouter } from 'next/router'
 import axios from 'axios'
 import Stripe from 'stripe'
 import { stripe } from '@/src/lib/stripe'
-import { ImageContainer, ProductContainer, ProductDetails } from '@/src/styles/pages/product'
+import { ButtonsContainer, Button, ImageContainer, ProductContainer, ProductDetails } from '@/src/styles/pages/product'
+import { ProductProps } from '@/src/contexts/CartContext'
+import { useCart } from '@/src/hooks/useCart'
 
-interface ProductProps {
-  product: {
-    id: string;
-    name: string;
-    description: string;
-    imageUrl: string;
-    price: string;
-    defaultPriceId: string;
-  }
+interface ProductPageProps {
+  product: ProductProps;
 }
 
-export default function Product({ product }: ProductProps) {
+export default function Product({ product }: ProductPageProps) {
+  const { addProductToCart, checkIfProductIsInCart } = useCart();
+
   const [isCreatingCheckoutSessions, setIsCreatingCheckoutSessions] = useState(false);
 
   const { isFallback } = useRouter()
@@ -52,6 +49,8 @@ export default function Product({ product }: ProductProps) {
     return <p>Carregando...</p>
   }
 
+  const productAlreadyInCart = checkIfProductIsInCart(product);
+
   return (
     <>
       <Head>
@@ -74,9 +73,15 @@ export default function Product({ product }: ProductProps) {
 
           <p>{product.description}</p>
 
-          <button onClick={handleBuyProduct} disabled={isCreatingCheckoutSessions}>
-            Comprar agora
-          </button>
+          <ButtonsContainer>
+            <Button onClick={handleBuyProduct} disabled={isCreatingCheckoutSessions}>
+              Comprar agora
+            </Button>
+
+            <Button variant="secondary" onClick={() => addProductToCart(product)} disabled={productAlreadyInCart}>
+              {productAlreadyInCart ? 'Produto adicionado' : 'Adicionar à sacola'}
+            </Button>
+          </ButtonsContainer>
         </ProductDetails>
       </ProductContainer>
     </>
@@ -126,6 +131,7 @@ export const getStaticProps: GetStaticProps<any, { id: string }> = async ({ para
           style: 'currency',
           currency: 'BRL'
         }).format((price.unit_amount ?? 0) / 100),
+        numberPrice: (price.unit_amount ?? 0) / 100,
         defaultPriceId: price.id,
       }
     },

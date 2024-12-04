@@ -4,20 +4,26 @@ import Head from 'next/head';
 import Image from 'next/image';
 import Stripe from 'stripe';
 import { stripe } from '../lib/stripe';
+import { useCart } from '../hooks/useCart';
 import { useKeenSlider } from 'keen-slider/react';
 import { HomeContainer, Product } from '../styles/pages/home';
+
+import { ProductSkeleton } from '../components/ProductSkeleton';
+import { AddToBagButton } from '../components/AddToBagButton';
+import { ProductProps } from '../contexts/CartContext';
+
 import 'keen-slider/keen-slider.min.css';
+import { useState, useEffect } from 'react';
 
 interface HomeProps {
-  products: {
-    id: string;
-    name: string;
-    imageUrl: string;
-    price: string;
-  }[]
+  products: ProductProps[]
 }
 
-export default function Home(props: HomeProps) {
+export default function Home({ products }: HomeProps) {
+  const { checkIfProductIsInCart } = useCart();
+
+  const [isLoading, setIsLoading] = useState(true);
+
   const [sliderRef] = useKeenSlider({
     slides: {
       perView: 2.25,
@@ -25,34 +31,68 @@ export default function Home(props: HomeProps) {
     }
   });
 
+  const [loadingSliderRef] = useKeenSlider({
+    slides: {
+      perView: 2.25,
+      spacing: 32,
+    }
+  });
+
+  useEffect(() => {
+    // simular loading do skeleton do Figma
+    const timeOut = setTimeout(() => {
+      setIsLoading(false);
+    }, 1200);
+
+    return () => {
+      clearTimeout(timeOut);
+    }
+  }, []);
+
   return (
     <>
       <Head>
         <title>Home | Ignite Shop</title>
       </Head>
 
-      <HomeContainer ref={sliderRef} className="keen-slider">
+      {isLoading && (
+        <HomeContainer ref={loadingSliderRef} className="keen-slider">
+          {Array.from({ length: 3 }).map((_, index) => (
+            <ProductSkeleton className="keen-slider__slide" key={index} />
+          ))}
+        </HomeContainer>
+      )}
 
-        {props.products.map(product => (
-          // prefetch = carrega a pág do link quando o link estiver no viewport
-          // tomar cuidado com o prefetch, pois pode carregar muitas páginas desnecessariamente
-          <Link href={`/product/${product.id}`} key={product.id} prefetch={false}>
-            <Product className="keen-slider__slide">
-              <Image
-                src={product.imageUrl}
-                width={520}
-                height={480}
-                alt=""
-              />
+      {!isLoading && (
+        <HomeContainer ref={sliderRef} className="keen-slider">
+          {products.map(product => (
+            // prefetch = carrega a pág do link quando o link estiver no viewport
+            // tomar cuidado com o prefetch, pois pode carregar muitas páginas desnecessariamente
+            <Product className="keen-slider__slide" key={product.id}>
+              <Link href={`/product/${product.id}`} prefetch={false}>
+                <Image
+                  src={product.imageUrl}
+                  width={520}
+                  height={480}
+                  alt=""
+                />
+              </Link>
 
               <footer>
-                <strong>{product.name}</strong>
-                <span>{product.price}</span>
+                <div>
+                  <Link href={`/product/${product.id}`} prefetch={false}>
+                    <strong>{product.name}</strong>
+                  </Link>
+                  <span>{product.price}</span>
+                </div>
+
+                <AddToBagButton product={product} disabled={checkIfProductIsInCart(product)} />
               </footer>
             </Product>
-          </Link>
-        ))}
-      </HomeContainer>
+          ))
+          }
+        </HomeContainer>
+      )}
     </>
   );
 }
@@ -78,10 +118,13 @@ export const getStaticProps: GetStaticProps = async () => {
       id: product.id,
       name: product.name,
       imageUrl: product.images[0],
+      description: product.description,
+      defaultPriceId: price.id,
+      numberPrice: (price.unit_amount ?? 0) / 100,
       price: new Intl.NumberFormat('pt-BR', {
         style: 'currency',
         currency: 'BRL'
-      }).format((price.unit_amount ?? 0) / 100)
+      }).format((price.unit_amount ?? 0) / 100),
     }
   });
 
