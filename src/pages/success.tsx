@@ -63,15 +63,6 @@ export default function Success({
 // getServerSideProps -> é a melhor opção pois não expõe os tokens e a url é dinâmica
 
 export const getServerSideProps: GetServerSideProps = async ({ query }) => {
-  if (!query.session_id) {
-    return {
-      redirect: {
-        destination: '/',
-        permanent: false,
-      },
-    };
-  }
-
   const sessionId = query.session_id;
 
   console.log('GetServerSideProps= ~ sessionId:', sessionId);
@@ -93,7 +84,7 @@ export const getServerSideProps: GetServerSideProps = async ({ query }) => {
     const lineItems = session.line_items?.data ?? [];
 
     if (!lineItems || lineItems.length === 0) {
-      console.warn('No line items found for session:', sessionId);
+      console.log('No line items found for session:', sessionId);
 
       return {
         redirect: {
