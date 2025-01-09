@@ -40,12 +40,6 @@ cp .env.example .env.local
 npm install
 ```
 
--Rodar as migrations do banco de dados:
-
-```
-npx prisma migrate dev
-```
-
 -Para rodar o app:
 
 ```
