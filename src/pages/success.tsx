@@ -1,23 +1,20 @@
-import { ImageContainer, SuccessContainer } from '../styles/pages/success';
-
-import Link from 'next/link';
 import { GetServerSideProps } from 'next';
 import Image from 'next/image';
 import Head from 'next/head';
-
-import { stripe } from '../lib/stripe';
+import Link from 'next/link';
 import Stripe from 'stripe';
+import { stripe } from '../lib/stripe';
+import { ImageContainer, SuccessContainer } from '../styles/pages/success';
 
 interface SuccessProps {
-  customerName: string;
-  products: {
+  costumerName: string;
+  product: {
     name: string;
     imageUrl: string;
-  }[];
+  };
 }
 
-export default function Success({ customerName, products }: SuccessProps) {
-  console.log(products);
+export default function Success({ costumerName, product }: SuccessProps) {
   return (
     <>
       <Head>
@@ -25,25 +22,17 @@ export default function Success({ customerName, products }: SuccessProps) {
 
         <meta name='robots' content='noindex' />
       </Head>
-      <SuccessContainer>
-        <h1>Compra Efetuada</h1>
 
-        {products.map((product) => {
-          return (
-            <ImageContainer key={product.name}>
-              <Image
-                src={product.images[0]}
-                width={120}
-                height={110}
-                alt={product.name}
-              />
-            </ImageContainer>
-          );
-        })}
+      <SuccessContainer>
+        <h1>Compra efetuada</h1>
+
+        <ImageContainer>
+          <Image src={product.imageUrl} width={120} height={110} alt='' />
+        </ImageContainer>
 
         <p>
-          Uhuul <strong>{customerName}</strong>, suas compras já estão a caminho
-          da sua casa!
+          Uhuul <strong>{costumerName}</strong>, sua{' '}
+          <strong>{product.name}</strong> já está a caminho da sua casa.
         </p>
 
         <Link href='/'>Voltar ao catálogo</Link>
@@ -68,16 +57,27 @@ export const getServerSideProps: GetServerSideProps = async ({ query }) => {
     expand: ['line_items', 'line_items.data.price.product'],
   });
 
-  const customerName = session.customer_details.name;
+  const costumerName = session?.customer_details?.name;
+  const product = session.line_items
+    ? (session?.line_items?.data[0]?.price?.product as Stripe.Product)
+    : null;
 
-  const products = session.line_items.data.map((product) => {
-    return product.price.product as Stripe.Product;
-  });
+  if (!costumerName || !product) {
+    return {
+      redirect: {
+        destination: '/',
+        permanent: false,
+      },
+    };
+  }
 
   return {
     props: {
-      customerName,
-      products,
+      costumerName,
+      product: {
+        name: product.name,
+        imageUrl: product.images[0],
+      },
     },
   };
 };
