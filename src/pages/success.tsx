@@ -1,24 +1,23 @@
-import { GetServerSideProps } from 'next';
+import { ImageContainer, SuccessContainer } from '../styles/pages/success';
+
 import Link from 'next/link';
-import Head from 'next/head';
+import { GetServerSideProps } from 'next';
 import Image from 'next/image';
-import Stripe from 'stripe';
+import Head from 'next/head';
+
 import { stripe } from '../lib/stripe';
-import {
-  SuccessContainer,
-  ImageContainer,
-  ImagesContainer,
-} from '../styles/pages/success';
+import Stripe from 'stripe';
 
 interface SuccessProps {
   customerName: string;
-  productsImages: string[];
+  products: {
+    name: string;
+    imageUrl: string;
+  }[];
 }
 
-export default function Success({
-  customerName,
-  productsImages,
-}: SuccessProps) {
+export default function Success({ customerName, products }: SuccessProps) {
+  console.log(products);
   return (
     <>
       <Head>
@@ -26,48 +25,35 @@ export default function Success({
 
         <meta name='robots' content='noindex' />
       </Head>
-
       <SuccessContainer>
-        <ImagesContainer>
-          {productsImages.map((image, index) => (
-            <ImageContainer key={index}>
-              <Image src={image} alt='' width={130} height={145} />
-            </ImageContainer>
-          ))}
-        </ImagesContainer>
+        <h1>Compra Efetuada</h1>
 
-        <h1>Compra efetuada!</h1>
+        {products.map((product) => {
+          return (
+            <ImageContainer key={product.name}>
+              <Image
+                src={product.images[0]}
+                width={120}
+                height={110}
+                alt={product.name}
+              />
+            </ImageContainer>
+          );
+        })}
 
         <p>
-          Uhuul! {customerName}, sua compra de {productsImages.length}{' '}
-          {productsImages.length > 1 ? 'produtos' : 'produto'} foi efetuada com
-          sucesso! 🎉
+          Uhuul <strong>{customerName}</strong>, suas compras já estão a caminho
+          da sua casa!
         </p>
 
-        <Link href='/'>Voltar ao Catálogo</Link>
+        <Link href='/'>Voltar ao catálogo</Link>
       </SuccessContainer>
     </>
   );
 }
 
-// checkout_session_id vem como query param na url
-// fetch de dados -> 3 maneiras
-// Client-side (useEffect) || getServerSideProps || getStaticProps
-
-// client-side, 2 problemas:
-// deverá possui uma loading screen e
-// a é questão de segurança pois os tokens do stripe ficarão expostos
-
-// getStaticProps -> não faz sentido para esse caso pois a url vem com o checkout_session_id que é dinâmico
-
-// getServerSideProps -> é a melhor opção pois não expõe os tokens e a url é dinâmica
-
 export const getServerSideProps: GetServerSideProps = async ({ query }) => {
-  const sessionId = query.session_id;
-
-  console.log('GetServerSideProps= ~ sessionId:', sessionId);
-
-  if (!sessionId) {
+  if (!query.session_id) {
     return {
       redirect: {
         destination: '/',
@@ -76,43 +62,22 @@ export const getServerSideProps: GetServerSideProps = async ({ query }) => {
     };
   }
 
-  try {
-    const session = await stripe.checkout.sessions.retrieve(String(sessionId), {
-      expand: ['line_items', 'line_items.data.price.product'],
-    });
+  const sessionId = String(query.session_id);
 
-    const lineItems = session.line_items?.data ?? [];
+  const session = await stripe.checkout.sessions.retrieve(sessionId, {
+    expand: ['line_items', 'line_items.data.price.product'],
+  });
 
-    if (!lineItems || lineItems.length === 0) {
-      console.log('No line items found for session:', sessionId);
+  const customerName = session.customer_details.name;
 
-      return {
-        redirect: {
-          destination: '/',
-          permanent: false,
-        },
-      };
-    }
+  const products = session.line_items.data.map((product) => {
+    return product.price.product as Stripe.Product;
+  });
 
-    const customerName = session.customer_details?.name;
-    const productsImages = lineItems.map((item) => {
-      if (!item.price) return '';
-
-      const product = item.price.product as Stripe.Product;
-      return product.images[0];
-    });
-
-    return {
-      props: { customerName, productsImages },
-    };
-  } catch (error) {
-    console.log('Error fetching checkout session:', error);
-
-    return {
-      redirect: {
-        destination: '/',
-        permanent: false,
-      },
-    };
-  }
+  return {
+    props: {
+      customerName,
+      products,
+    },
+  };
 };
