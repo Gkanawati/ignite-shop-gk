@@ -1,18 +1,29 @@
 import { useState } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
 import Image from 'next/image';
-import { Handbag, X } from '@phosphor-icons/react';
+import { X } from '@phosphor-icons/react/dist/ssr/X';
+import { Handbag } from '@phosphor-icons/react/dist/ssr/Handbag';
 import { useCart } from '@/src/hooks/useCart';
 import { BagButtonContainer } from '@/src/styles/pages/bag-button';
 import { CartIndicator } from '@/src/styles/pages/header';
-import { CartClose, CartContent, CartFinalization, CartProduct, CartProductDetails, CartProductImage, CartProductsList, FinalizationDetails } from './styles';
+import {
+  CartClose,
+  CartContent,
+  CartFinalization,
+  CartProduct,
+  CartProductDetails,
+  CartProductImage,
+  CartProductsList,
+  FinalizationDetails,
+} from './styles';
 import axios from 'axios';
 
 export function Cart() {
   const { cart, cartTotal, removeProductFromCart, clearCart } = useCart();
   const cartQuantity = cart.length;
 
-  const [isCreatingCheckoutSessions, setIsCreatingCheckoutSessions] = useState(false);
+  const [isCreatingCheckoutSessions, setIsCreatingCheckoutSessions] =
+    useState(false);
 
   async function handleCartCheckout() {
     try {
@@ -32,7 +43,7 @@ export function Cart() {
 
       // TODO: handle error
       // conectar com uma ferramente de observabilidade (DataDog / Sentry)
-      alert('Falha ao redirecionar ao checkout!')
+      alert('Falha ao redirecionar ao checkout!');
     }
   }
 
@@ -73,9 +84,7 @@ export function Cart() {
                       <p>{product.name}</p>
                       <strong>{product.price}</strong>
 
-                      <button
-                        onClick={() => removeProductFromCart(product)}
-                      >
+                      <button onClick={() => removeProductFromCart(product)}>
                         Remover
                       </button>
                     </CartProductDetails>
@@ -89,7 +98,9 @@ export function Cart() {
             <FinalizationDetails>
               <div>
                 <span>Quantidade</span>
-                <p>{cartQuantity} {cartQuantity > 1 ? 'itens' : 'item'}</p>
+                <p>
+                  {cartQuantity} {cartQuantity > 1 ? 'itens' : 'item'}
+                </p>
               </div>
 
               <div>
@@ -97,19 +108,21 @@ export function Cart() {
                 <p>
                   {Intl.NumberFormat('pt-BR', {
                     style: 'currency',
-                    currency: 'BRL'
+                    currency: 'BRL',
                   }).format(cartTotal)}
                 </p>
               </div>
             </FinalizationDetails>
 
-            <button onClick={handleCartCheckout} disabled={isCreatingCheckoutSessions || cartQuantity === 0}>
+            <button
+              onClick={handleCartCheckout}
+              disabled={isCreatingCheckoutSessions || cartQuantity === 0}
+            >
               Finalizar compra
             </button>
           </CartFinalization>
-
         </CartContent>
       </Dialog.Portal>
     </Dialog.Root>
-  )
+  );
 }

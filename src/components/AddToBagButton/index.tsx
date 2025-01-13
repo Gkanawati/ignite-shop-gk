@@ -1,14 +1,19 @@
-import { Handbag } from '@phosphor-icons/react';
+import { Handbag } from '@phosphor-icons/react/dist/ssr/Handbag';
 import { useCart } from '@/src/hooks/useCart';
 import { ProductProps } from '@/src/contexts/CartContext';
 import { BagButtonContainer } from '@/src/styles/pages/bag-button';
 
-export interface AddToBagButtonProps extends React.HTMLAttributes<HTMLButtonElement> {
-  product: ProductProps
-  disabled?: boolean
+export interface AddToBagButtonProps
+  extends React.HTMLAttributes<HTMLButtonElement> {
+  product: ProductProps;
+  disabled?: boolean;
 }
 
-export function AddToBagButton({ product, disabled, ...props }: AddToBagButtonProps) {
+export function AddToBagButton({
+  product,
+  disabled,
+  ...props
+}: AddToBagButtonProps) {
   const { addProductToCart } = useCart();
 
   return (
@@ -20,5 +25,5 @@ export function AddToBagButton({ product, disabled, ...props }: AddToBagButtonPr
     >
       <Handbag size={24} weight='bold' />
     </BagButtonContainer>
-  )
+  );
 }
