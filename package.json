@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@phosphor-icons/react": "^2.1.7",
+    "@radix-ui/primitive": "^1.1.1",
     "@radix-ui/react-dialog": "^1.1.2",
     "@radix-ui/react-use-callback-ref": "^1.1.0",
     "@radix-ui/react-use-layout-effect": "^1.1.0",
